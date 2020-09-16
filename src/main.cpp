@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 #include <string>
 #include <io2d.h>
 #include "route_model.h"
@@ -9,6 +10,7 @@
 #include "route_planner.h"
 
 using namespace std::experimental;
+using namespace std;
 
 static std::optional<std::vector<std::byte>> ReadFile(const std::string &path)
 {   
@@ -25,6 +27,20 @@ static std::optional<std::vector<std::byte>> ReadFile(const std::string &path)
     if( contents.empty() )
         return std::nullopt;
     return std::move(contents);
+}
+
+float inputCoordinate(string name) {
+    float coordinate;
+    bool is_first_entry = true;
+    cout << "Enter " << name << ": ";
+    do {
+        if (!is_first_entry) {
+            cout << "Try again. Enter a value between 0.0 and 100.0" << endl;
+        }
+        cin >> coordinate;
+        is_first_entry = false;
+    } while (coordinate < 0 || coordinate > 100);
+    return coordinate;
 }
 
 int main(int argc, const char **argv)
@@ -52,15 +68,27 @@ int main(int argc, const char **argv)
             osm_data = std::move(*data);
     }
     
-    // TODO 1: Declare floats `start_x`, `start_y`, `end_x`, and `end_y` and get
+    // Declare floats `start_x`, `start_y`, `end_x`, and `end_y` and get
     // user input for these values using std::cin. Pass the user input to the
     // RoutePlanner object below in place of 10, 10, 90, 90.
+    cout << "Enter values between 0.0 and 100.0" << endl;
+    float start_x = inputCoordinate("start x");
+    float start_y = inputCoordinate("start y");
+    float end_x = inputCoordinate("end x");
+    float end_y = inputCoordinate("end y");
 
     // Build Model.
     RouteModel model{osm_data};
 
     // Create RoutePlanner object and perform A* search.
-    RoutePlanner route_planner{model, 10, 10, 90, 90};
+    RoutePlanner route_planner{
+        model,
+        start_x, 
+        start_y,
+        end_x,
+        end_y,
+    };
+    
     route_planner.AStarSearch();
 
     std::cout << "Distance: " << route_planner.GetDistance() << " meters. \n";
